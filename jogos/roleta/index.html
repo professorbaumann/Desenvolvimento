@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Roleta</title>
+    <style>
+        /* Importação da fonte Univers */
+        @font-face {
+            font-family: 'Univers';
+            src: url('https://fonts.cdnfonts.com/s/14882/Univers.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Univers';
+            src: url('https://fonts.cdnfonts.com/s/14882/Univers-Italic.woff') format('woff');
+            font-weight: normal;
+            font-style: italic;
+        }
+        @font-face {
+            font-family: 'Univers';
+            src: url('https://fonts.cdnfonts.com/s/14882/Univers-Black.woff') format('woff');
+            font-weight: 900;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Univers';
+            src: url('https://fonts.cdnfonts.com/s/14882/Univers-BlackItalic.woff') format('woff');
+            font-weight: 900;
+            font-style: italic;
+        }
+
+        body {
+            text-align: center;
+            font-family: 'Univers', sans-serif;
+            background-color: #FEFEFE;
+            color: #0047B6;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            font-weight: 900; /* Univers Black */
+            color: #0047B6;
+            margin-bottom: 20px;
+        }
+        .roleta {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px;
+        }
+        .posicao {
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #0047B6;
+            border-radius: 50%;
+            background-color: #FEFEFE;
+            color: #0047B6;
+            font-size: 1.2em;
+            font-weight: 900; /* Univers Black */
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .posicao:hover {
+            transform: scale(1.1);
+            background-color: #0047B6;
+            color: #FEFEFE;
+        }
+        .sorteado {
+            background-color: #0047B6;
+            color: #FEFEFE;
+            font-weight: 900; /* Univers Black */
+            animation: bounce 0.5s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .opcao {
+            display: block;
+            margin: 10px auto;
+            padding: 15px;
+            border: 2px solid #0047B6;
+            border-radius: 10px;
+            background-color: #FEFEFE;
+            color: #0047B6;
+            font-size: 1.2em;
+            font-weight: 900; /* Univers Black */
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .opcao:hover {
+            background-color: #0047B6;
+            color: #FEFEFE;
+            transform: scale(1.05);
+        }
+        .correta {
+            background-color: #4CAF50; /* Verde para resposta correta */
+            color: #FEFEFE;
+        }
+        .errada {
+            background-color: #F44336; /* Vermelho para resposta errada */
+            color: #FEFEFE;
+        }
+        #pergunta {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #explicacao {
+            margin-top: 20px;
+            font-size: 1.1em;
+            font-style: italic; /* Univers Italic */
+            color: #0047B6;
+            display: none; /* Inicialmente oculto */
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: 900; /* Univers Black */
+            color: #FEFEFE;
+            background-color: #0047B6;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #003366;
+            transform: scale(1.05);
+        }
+        .imagem-pergunta {
+            width: 200px; /* Largura fixa de 200 pixels */
+            height: auto; /* Altura ajustada automaticamente para manter a proporção */
+            margin-top: 20px;
+            border-radius: 10px;
+        }
+        #notificacao {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: #0047B6;
+        color: #FEFEFE;
+        padding: 15px 30px;
+        border-radius: 10px;
+        font-weight: 900;
+        display: none;
+        animation: fadeOut 5s forwards;
+    }
+
+    @keyframes fadeOut {
+        0% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { opacity: 0; display: none; }
+    }
+    </style>
+</head>
+<body>
+    <h1>Raciocínio Lógico: Dedução. Indução. Abdução</h1>
+    <div class="roleta" id="roleta"></div>
+    <button onclick="girarRoleta()">Girar Roleta</button>
+    <h2 id="resultado"></h2>
+    <div id="pergunta" style="display: none;">
+        <h3 id="pergunta-texto"></h3>
+        <img id="imagem-pergunta" class="imagem-pergunta" src="" alt="Imagem da pergunta">
+        <div id="opcoes"></div>
+        <p id="explicacao"></p>
+    </div>
+
+    <script>
+        const perguntas = {
+            1: { pergunta: "Se todos os cães latem e Rex é um cão, então Rex late. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "Dedução é quando a conclusão segue necessariamente das premissas.", imagem: "1.jpeg" },
+            2: { pergunta: "Observei 100 cisnes e todos eram brancos. Logo, todos os cisnes são brancos. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "Indução é baseada na generalização de observações específicas.", imagem: "2.jpeg" },
+            3: { pergunta: "Vejo pegadas molhadas na entrada. Provavelmente choveu. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 2, explicacao: "Abdução tenta inferir a melhor explicação para um fato observado.", imagem: "3.jpeg" },
+            4: { pergunta: "Se todo metal conduz eletricidade e o cobre é um metal, então o cobre conduz eletricidade. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "A dedução parte de premissas gerais para concluir um caso específico.", imagem: "4.jpeg" },
+            5: { pergunta: "Todos os gatos que vi até agora são peludos. Logo, todos os gatos são peludos. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "A indução usa observações repetidas para criar uma generalização.", imagem: "5.jpeg" },
+            6: { pergunta: "Vejo fumaça no horizonte. Deve haver um incêndio. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 2, explicacao: "A abdução tenta inferir a causa mais provável para uma evidência observada.", imagem: "6.jpeg" },
+            7: { pergunta: "Se todo triângulo tem três lados e esta figura é um triângulo, então tem três lados. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "A dedução segue uma regra geral para um caso específico.", imagem: "7.jpeg" },
+            8: { pergunta: "Todos os alunos que entrevistei disseram gostar de matemática. Então, todos os alunos gostam de matemática. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "Indução se baseia em um número limitado de observações para chegar a uma conclusão geral.", imagem: "8.jpeg" },
+            9: { pergunta: "Encontro um copo quebrado no chão e água derramada. Alguém deve ter deixado cair. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 2, explicacao: "A abdução tenta formular a melhor explicação para um evento observado.", imagem: "9.jpeg" },
+            10: { pergunta: "Se todas as aves têm asas e o pinguim é uma ave, então o pinguim tem asas. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "Dedução é uma conclusão lógica baseada em uma premissa geral.", imagem: "10.jpeg" },
+            11: { pergunta: "Todos os carros que testei são rápidos. Então, todos os carros são rápidos. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "A indução extrapola um padrão observado para uma regra geral.", imagem: "11.jpeg" },
+            12: { pergunta: "Vejo marcas de pneus na rua. Alguém deve ter freado bruscamente. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 2, explicacao: "A abdução propõe a melhor hipótese para uma evidência dada.", imagem: "12.jpeg" },
+            13: { pergunta: "Se todo número par é divisível por 2 e 8 é par, então 8 é divisível por 2. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "A dedução aplica uma regra geral a um caso específico.", imagem: "13.jpeg" },
+            14: { pergunta: "Observei que todas as maçãs que comi eram doces. Logo, todas as maçãs são doces. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "A indução generaliza uma propriedade com base em casos particulares.", imagem: "14.jpeg" },
+            15: { pergunta: "Há pegadas de barro no tapete. Alguém entrou com os sapatos sujos. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 2, explicacao: "A abdução busca a explicação mais plausível para um fato observado.", imagem: "15.jpeg" },
+            16: { pergunta: "Se todas as plantas precisam de luz para crescer e o feijão é uma planta, então o feijão precisa de luz. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "A dedução segue regras lógicas estritas para tirar conclusões.", imagem: "16.jpeg" },
+            17: { pergunta: "Todas as vezes que usei este remédio, minha dor passou. Então, este remédio sempre funciona. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "A indução assume que um padrão observado continuará no futuro.", imagem: "17.jpeg" },
+            18: { pergunta: "Vejo um carro amassado e vidro no chão. Deve ter ocorrido um acidente. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 2, explicacao: "A abdução infere uma explicação provável para a evidência disponível.", imagem: "18.jpeg" },
+            19: { pergunta: "Se todo ser humano tem cérebro e João é humano, então João tem cérebro. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "A dedução aplica um princípio geral a um caso específico.", imagem: "19.jpeg" },
+            20: { pergunta: "Observei que todos os dias em janeiro foram frios. Então, todo janeiro é frio. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "A indução baseia-se em um conjunto limitado de dados para gerar uma conclusão.", imagem: "20.jpeg" },
+            21: { pergunta: "Todos os patos que já vi nadam. Logo, todos os patos nadam. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "A indução parte de exemplos individuais para uma conclusão geral.", imagem: "21.jpeg" },
+            22: { pergunta: "Se vejo um copo caído e água no chão, concluo que alguém o derrubou. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 2, explicacao: "A abdução busca a melhor explicação para um evento observado.", imagem: "22.jpeg" },
+            23: { pergunta: "Se todo ser vivo precisa de oxigênio e uma baleia é um ser vivo, então uma baleia precisa de oxigênio. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "A dedução segue um raciocínio lógico estrito.", imagem: "23.jpeg" },
+            24: { pergunta: "Todos os carros elétricos que já vi são silenciosos. Logo, todos os carros elétricos são silenciosos. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "A indução generaliza um padrão observado.", imagem: "24.jpeg" },
+            25: { pergunta: "Vejo comida espalhada e um cachorro perto. Acho que ele comeu a comida. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 2, explicacao: "A abdução tenta inferir a melhor explicação para um fato observado.", imagem: "25.jpeg" },
+            26: { pergunta: "Se todos os planetas giram ao redor de uma estrela e a Terra é um planeta, então a Terra gira ao redor de uma estrela. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "Dedução aplica uma regra geral a um caso específico.", imagem: "26.jpeg" },
+            27: { pergunta: "Todos os músicos que conheço sabem ler partituras. Então, todo músico sabe ler partituras. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "Indução generaliza observações para chegar a uma conclusão geral.", imagem: "27.jpeg" },
+            28: { pergunta: "Se vejo rastros de pneus na lama, posso concluir que um carro passou por aqui. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 2, explicacao: "A abdução infere a explicação mais provável para um evento.", imagem: "28.jpeg" },
+            29: { pergunta: "Se todas as frutas têm sementes e uma maçã é uma fruta, então uma maçã tem sementes. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 0, explicacao: "Dedução parte de uma premissa geral para um caso específico.", imagem: "29.jpeg" },
+            30: { pergunta: "Todos os professores que conheço gostam de ensinar. Logo, todo professor gosta de ensinar. Que tipo de raciocínio é esse?", opcoes: ["Dedução", "Indução", "Abdução"], correta: 1, explicacao: "A indução generaliza a partir de um conjunto limitado de observações.", imagem: "30.jpeg" }
+        };
+
+        let perguntasDisponiveis = { ...perguntas }; // Cria uma cópia das perguntas
+
+        function criarRoleta() {
+            let roleta = document.getElementById("roleta");
+            for (let i = 1; i <= 30; i++) {
+                let div = document.createElement("div");
+                div.classList.add("posicao");
+                div.textContent = i;
+                div.id = "posicao-" + i;
+                roleta.appendChild(div);
+            }
+        }
+
+        function girarRoleta() {
+            
+            if (Object.keys(perguntasDisponiveis).length === 0) {
+                alert("Todas as perguntas foram respondidas!");
+                return;
+            }
+
+            let numerosDisponiveis = Object.keys(perguntasDisponiveis);
+            let numeroSorteado = numerosDisponiveis[Math.floor(Math.random() * numerosDisponiveis.length)];
+            document.getElementById("resultado").textContent = "Número sorteado: " + numeroSorteado;
+            document.querySelectorAll(".posicao").forEach(el => el.classList.remove("sorteado"));
+            document.getElementById("posicao-" + numeroSorteado).classList.add("sorteado");
+
+            let questao = perguntasDisponiveis[numeroSorteado];
+            document.getElementById("pergunta-texto").textContent = questao.pergunta;
+            document.getElementById("imagem-pergunta").src = questao.imagem; // Exibe a imagem da pergunta
+            let opcoesDiv = document.getElementById("opcoes");
+            opcoesDiv.innerHTML = "";
+
+            questao.opcoes.forEach((opcao, index) => {
+                let botao = document.createElement("div");
+                botao.classList.add("opcao");
+                botao.textContent = opcao;
+                botao.onclick = () => verificarResposta(botao, index === questao.correta, questao.explicacao, numeroSorteado);
+                opcoesDiv.appendChild(botao);
+            });
+
+            document.getElementById("pergunta").style.display = "block";
+        }
+
+  // Modifique a função verificarResposta
+function verificarResposta(elemento, correta, explicacao, numeroSorteado) {
+    document.querySelectorAll(".opcao").forEach(op => {
+        op.classList.add("errada");
+    });
+
+    let explicacaoEl = document.getElementById("explicacao");
+    let notificacao = document.getElementById("notificacao");
+
+    if (correta) {
+        elemento.classList.remove("errada");
+        elemento.classList.add("correta");
+        explicacaoEl.style.display = "block";
+        explicacaoEl.textContent = explicacao;
+        
+        // Mostra e esconde a notificação
+        notificacao.textContent = "Resposta correta! Esta mensagem desaparecerá em 5 segundos.";
+        notificacao.style.display = "block";
+        notificacao.style.opacity = "1";
+        
+        setTimeout(() => {
+            notificacao.style.display = "none";
+        }, 5000);
+
+        delete perguntasDisponiveis[numeroSorteado];
+    } else {
+        explicacaoEl.style.display = "none";
+        notificacao.style.display = "none";
+    }
+}
+
+        criarRoleta();
+    </script>
+    <div id="notificacao"></div>
+</body>
+</html>
