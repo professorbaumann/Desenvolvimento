@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo da Forca</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Jogo da Forca</h1>
+        
+        <div id="setup-game">
+            <h2>Cadastre as palavras</h2>
+            <textarea id="palavras" placeholder="Digite as palavras separadas por vírgula"></textarea>
+            <button onclick="iniciarJogo()">Começar Jogo</button>
+        </div>
+
+        <div id="game" style="display: none;">
+            <canvas id="forca" width="300" height="300"></canvas>
+            <div id="palavra-container"></div>
+            <div id="letras-erradas"></div>
+            <div id="teclado"></div>
+            <p id="mensagem"></p>
+            <button onclick="reiniciarJogo()" id="btn-reiniciar" style="display: none;">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <a href="../../index.html" class="voltar-btn">Voltar para Jogos</a>
+    <script src="script.js"></script>
+</body>
+</html> 
